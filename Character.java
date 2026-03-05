@@ -1,4 +1,4 @@
-import java.util.Scanner;
+// import java.util.Scanner;
 
 abstract class Character{
     protected String name;

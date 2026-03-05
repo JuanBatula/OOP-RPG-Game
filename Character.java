@@ -37,6 +37,12 @@ class Player extends Character{
     this.experience = 0;         // starting experience
   }
 
+  public Player(String name, int health, int attackPower) {
+        super(name, health, attackPower);
+        this.level = 1;
+        this.experience = 0;
+    }
+
   @Override
   public int attack(){
     // random chance for crticial hit
@@ -74,8 +80,22 @@ class Enemy extends Character{
 
   @Override
   public int attack(){
-    return attackPower;
+    int damage = attackPower + rand.nextInt(6); //random damage variation
+    System.out.println(name + " attacks for " + damage);
+    return damage;
   }
+
+  public int giveExperience(){
+    return difficultyLevel*20;
+  }
+
+  public String getName() {
+        return name;
+    }
+
+    public int getDifficulty() {
+        return difficultyLevel;
+    }
 }
 
 

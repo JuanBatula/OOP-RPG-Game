@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Random;
 
 class Inventory {
         private ArrayList<Item> items;

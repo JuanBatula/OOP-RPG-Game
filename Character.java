@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+// import java.util.Scanner;
+
+>>>>>>> bc2d1cc3f9c029fe497d405520bef364594fe067
 abstract class Character{
     protected String name;
     protected int health;

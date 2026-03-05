@@ -1,27 +1,27 @@
-<<<<<<< HEAD
-=======
-// import java.util.Scanner;
+import java.util.Random;
 
->>>>>>> bc2d1cc3f9c029fe497d405520bef364594fe067
 abstract class Character{
     protected String name;
     protected int health;
+    protected int maxHealth;
     protected int attackPower;
+    protected Random rand = new Random();
 
     public Character(String name, int health, int attackPower){
         this.name = name;
         this.health = health;
+        this.maxHealth = health;
         this.attackPower = attackPower;
     }
 
     public void takeDamage(int damage){
         health -= damage;                   
         if (health < 0) health = 0;
+        System.out.println(name + " takes " + damage + " damage! (HP: " + health + "/" + maxHealth + ")");
     }
 
-    //getter 
-    public int getHealth(){
-        return health;
+    public boolean isAlive(){
+      return health > 0;
     }
 
     public abstract int attack();
@@ -39,7 +39,11 @@ class Player extends Character{
 
   @Override
   public int attack(){
-    return attackPower;
+    // random chance for crticial hit
+    boolean critical = rand.nextInt(100) < 20; // 20% chance
+    int damage = critical ? attackPower*2 : attackPower;
+    System.out.println(name + " attacks for " + damage + (critical ? " (Critical!)" : ""));
+    return damage;
   }
 
   public void gainExperience(int exp){   // to level up

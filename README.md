@@ -1,7 +1,2 @@
-# SIMPLE RPG BATTLE
-
-A text-based turn-based RPG where you fight enemies, use items, and level up!
-
-## About the Game
-
-Choose your hero and battle through multiple stages of enemies. Use potions to heal, land critical hits, and become stronger as you progress. Simple, fun, and perfect for Java RPG fans!
+<img width="1090" height="886" alt="Class Diagram" src="https://github.com/user-attachments/assets/28d8bb9f-a5b3-4ebb-9a82-9d5033aa1c8f" />
+<img width="1533" height="1347" alt="Use Case Diagram" src="https://github.com/user-attachments/assets/a5f3c9ad-aacd-4472-8556-86f366bbcbcb" />

@@ -37,6 +37,10 @@ public class Player extends Character {
         this.attackPower += amount;
     }
 
+    public void addDefense(int amount) {
+        this.defense += amount;
+    }   
+
     @Override
     public int attack() {
         System.out.println(name + " attacks for " + attackPower + " damage!");

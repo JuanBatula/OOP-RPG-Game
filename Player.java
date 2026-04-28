@@ -33,6 +33,10 @@ public class Player extends Character {
         System.out.println("Congratulations! " + name + " reached level " + level + "!");
     }
 
+    public void addAttackPower(int amount) {
+        this.attackPower += amount;
+    }
+
     @Override
     public int attack() {
         System.out.println(name + " attacks for " + attackPower + " damage!");

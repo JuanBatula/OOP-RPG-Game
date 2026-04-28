@@ -18,7 +18,7 @@ public abstract class Character {
         }
 
         public void takeDamage(int damage) {
-            this.health -= damage;
+            this.health -= Math.max(1, damage - this.defense);
                 if (this.health < 0) {
                                 this.health = 0;
                 }

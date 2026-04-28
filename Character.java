@@ -4,6 +4,7 @@ public abstract class Character {
         protected int health;
         protected int maxHealth;
         protected int attackPower;
+        protected int defense;
 
         public Character(String name, int health, int maxHealth, int attackPower){
                     this.name = name;

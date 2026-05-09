@@ -1,25 +1,25 @@
-public class Enemy extends Character {
+public abstract class Enemy extends Character {
 
-    private String difficulty;
-    private int expValue;
+    protected int xpReward;
 
-    public Enemy(String name, String difficulty) {
-        super(name, 80, 80, 8);
-        this.difficulty = difficulty;
-        this.expValue = 50;
+    public Enemy(String name, int health, int maxHealth, int attackPower, int defense, int xpReward) {
+        super(name, health, maxHealth, attackPower);
+        this.defense = defense;
+        this.xpReward = xpReward;
     }
 
-    public String getDifficulty() {
-        return difficulty;
-    }
+    public abstract int getXPReward();
 
-    public int getExpValue() {
-        return expValue;
-    }
+    public abstract int getAttackDamage(int currentHp, int maxHp);
 
     @Override
     public int attack() {
-        System.out.println(name + " attacks for " + attackPower + " damage!");
-        return attackPower;
+        int damage = getAttackDamage(this.health, this.maxHealth);
+        System.out.println(name + " attacks for " + damage + " damage!");
+        return damage;
+    }
+
+    public int getExpValue() {
+        return getXPReward();
     }
 }

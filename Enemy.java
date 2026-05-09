@@ -1,3 +1,9 @@
+/*   Enemy        XP Reward        Special Mechanic                            Difficulty
+    Goblin           50             Basic attack                                  Easy
+    Troll            150            Heavy damage (1.5x)+20% miss chance           Medium
+    Boss             500            Enrage at 30% HP (+20% damage)                Hard
+*/  
+
 public abstract class Enemy extends Character {
 
     protected int xpReward;

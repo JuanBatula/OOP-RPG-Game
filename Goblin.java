@@ -10,7 +10,7 @@ public class Goblin extends Enemy {
   }
 
   @Override
-  public int getAttackDamage(int currentHp, maxHp){
+  public int getAttackDamage(int currentHp, int maxHp){
     return this.attackPower;
   }
 }

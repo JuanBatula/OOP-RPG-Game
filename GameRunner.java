@@ -117,7 +117,7 @@ public class GameRunner {
 
     /** Returns true if player is below 50% HP. */
     private static boolean needsHealing(Player player) {
-        
-        return !player.isAlive() || true; 
-    }
+    // BUG WAS: return !player.isAlive() || true;  ← always true
+    return (double) player.getHealth() / player.getMaxHealth() < 0.5;
+}
 }

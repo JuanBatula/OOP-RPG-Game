@@ -1,9 +1,13 @@
 public class GameRunner {
 
+    
     public static void main(String[] args) {
         System.out.println("========================================");
         System.out.println("       WELCOME TO THE RPG GAME!         ");
         System.out.println("========================================\n");
+
+        // ===== RUNSUMMARY IMPLEMENTATION #1: Create RunSummary instance =====
+        RunSummary summary = new RunSummary();
 
         // --- Setup: Create player and items ---
         Player player = new Player("Hero", 100, 100, 10);
@@ -37,7 +41,7 @@ public class GameRunner {
         System.out.println("   ENCOUNTER: A Goblin appears!");
         System.out.println("========================================");
         Enemy goblin = new Enemy("Goblin", "easy");
-        runBattle(player, goblin);
+        runBattle(player, goblin, summary);
         System.out.println();
 
         // --- Swap weapon mid-game ---
@@ -59,7 +63,7 @@ public class GameRunner {
         System.out.println("   ENCOUNTER: A Troll appears!");
         System.out.println("========================================");
         Enemy troll = new Enemy("Troll", "hard");
-        runBattle(player, troll);
+        runBattle(player, troll, summary);
         System.out.println();
 
         // --- Test inventory capacity (fill to max) ---
@@ -76,12 +80,15 @@ public class GameRunner {
         System.out.println("\n========================================");
         System.out.println("             GAME OVER                  ");
         System.out.println("========================================");
+
+        summary.printReport();
     }
 
     /** Runs a full player-vs-enemy battle loop. */
-    private static void runBattle(Player player, Enemy enemy) {
+    private static void runBattle(Player player, Enemy enemy, RunSummary summary) {
         Battle battle = new Battle();
         battle.initializeBattle(player, enemy);
+        battle.setRunSummary(summary);
 
         System.out.println(player.getName() + " (HP: " + player.getInventory().getSize() + " items) vs " + enemy.getName());
         System.out.println();
@@ -104,6 +111,8 @@ public class GameRunner {
         } else if ("enemy".equals(winner)) {
             System.out.println("\n" + player.getName() + " was defeated by " + enemy.getName() + "...");
         }
+
+        summary.recordStageCleared();
     }
 
     /** Returns true if player is below 50% HP. */

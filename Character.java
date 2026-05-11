@@ -1,36 +1,41 @@
 public abstract class Character {
 
-        protected String name;
-        protected int health;
-        protected int maxHealth;
-        protected int attackPower;
-        protected int defense;
+    protected String name;
+    protected int health;
+    protected int maxHealth;
+    protected int attackPower;
+    protected int defense;
 
-        public Character(String name, int health, int maxHealth, int attackPower){
-                    this.name = name;
-                    this.health = health;
-                    this.maxHealth = maxHealth;
-                    this.attackPower = attackPower;
-        }
+    public Character(String name, int health, int maxHealth, int attackPower) {
+        this.name = name;
+        this.health = health;
+        this.maxHealth = maxHealth;
+        this.attackPower = attackPower;
+    }
 
-        public String getName() {
-                    return name;
-        }
+    public String getName() {
+        return name;
+    }
 
-        public void takeDamage(int damage) {
-            this.health -= Math.max(1, damage - this.defense);
-                if (this.health < 0) {
-                                this.health = 0;
-                }
-                        System.out.println(name + " takes " + damage + " damage! (HP: " + health + "/" + maxHealth + ")");
+    public void takeDamage(int damage) {
+        this.health -= Math.max(1, damage - this.defense);
+        if (this.health < 0) {
+            this.health = 0;
         }
+        System.out.println(name + " takes " + damage + " damage! (HP: " + health + "/" + maxHealth + ")");
+    }
 
-        public boolean isAlive() {
-            return this.health > 0;
-        }
+    public boolean isAlive() {
+        return this.health > 0;
+    }
 
-        public int attack() {
-            System.out.println(name + " attacks for " + attackPower + " damage!");
-            return attackPower;
-        }
+    public int attack() {
+        System.out.println(name + " attacks for " + attackPower + " damage!");
+        return attackPower;
+    }
+
+    // --- Added getters so subclasses and GameRunner can read stats cleanly ---
+    public int getHealth()    { return health; }
+    public int getMaxHealth() { return maxHealth; }
+    public int getDefense()   { return defense; }
 }

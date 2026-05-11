@@ -7,6 +7,7 @@ public class Player extends Character {
     private Armor equippedArmor;
     private Inventory inventory;
     private StatusEffectManager statusEffectManager;
+    private SkillTree skillTree;
 
     public Player(String name, int health, int maxHealth, int attackPower) {
         super(name, health, maxHealth, attackPower);
@@ -17,6 +18,7 @@ public class Player extends Character {
         this.equippedArmor = null;
         this.inventory = new Inventory();
         this.statusEffectManager = new StatusEffectManager();
+        this.skillTree = new SkillTree();
     }
 
     public void heal(int amount) {
@@ -44,6 +46,23 @@ public class Player extends Character {
         this.exp = 0;
         System.out.println("Congratulations! " + name + " reached level " + level + "!");
     }
+
+    public SkillTree getSkillTree() { 
+        return skillTree; 
+    }
+
+    public void unlockAbility(Ability ability) {
+        skillTree.unlock(ability);
+    }
+
+    public boolean useAbility(String abilityName, Character target) {
+        Ability ability = skillTree.getAbility(abilityName);
+
+        if (ability == null) return false;
+        ability.use(this, target);
+        
+        return true;
+}   
 
     public void equipWeapon(Weapon weapon) {
         if (equippedWeapon != null) {

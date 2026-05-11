@@ -1,5 +1,3 @@
-// MODIFIED by Member 2: added StatusEffectManager field and getter.
-// No existing method signatures were changed.
 public class Player extends Character {
     private int level;
     private int exp;
@@ -8,7 +6,7 @@ public class Player extends Character {
     private Weapon equippedWeapon;
     private Armor equippedArmor;
     private Inventory inventory;
-    private StatusEffectManager statusEffectManager; // Member 2 — added
+    private StatusEffectManager statusEffectManager;
 
     public Player(String name, int health, int maxHealth, int attackPower) {
         super(name, health, maxHealth, attackPower);
@@ -18,7 +16,7 @@ public class Player extends Character {
         this.equippedWeapon = null;
         this.equippedArmor = null;
         this.inventory = new Inventory();
-        this.statusEffectManager = new StatusEffectManager(); // Member 2 — added
+        this.statusEffectManager = new StatusEffectManager();
     }
 
     public void heal(int amount) {
@@ -117,7 +115,14 @@ public class Player extends Character {
     public Weapon getEquippedWeapon() { return equippedWeapon; }
     public Armor getEquippedArmor() { return equippedArmor; }
     public Inventory getInventory() { return inventory; }
-    public StatusEffectManager getStatusEffectManager() { return statusEffectManager; } // Member 2 — added
+    public StatusEffectManager getStatusEffectManager() { return statusEffectManager; } 
+
+    public void setExp(int exp) { 
+    this.exp = exp; 
+}
+    public int getHealth() { return health; }
+    public int getMaxHealth() { return maxHealth; }
+    public int getDefense() { return defense; }
 
     public void printStatus() {
         System.out.println("=== " + name + " (Level " + level + ") ===");
@@ -127,7 +132,7 @@ public class Player extends Character {
         System.out.println("  EXP:    " + exp + "/100");
         System.out.println("  Weapon: " + (equippedWeapon != null ? equippedWeapon.getItemName() : "none"));
         System.out.println("  Armor:  " + (equippedArmor != null ? equippedArmor.getItemName() : "none"));
-        // Member 2 — print active status effects
+
         System.out.println("  Status Effects:");
         statusEffectManager.printEffects();
     }

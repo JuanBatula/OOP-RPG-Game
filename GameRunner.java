@@ -18,6 +18,7 @@ public class GameRunner {
         Potion smallPotion = new Potion("Small Potion", 20, 30);
         Potion largePotion = new Potion("Large Potion", 40, 60);
         Weapon greatAxe   = new Weapon("Great Axe", 120, 15);
+        EnemyFactory factory = new EnemyFactory();
 
         inventory.addItem(sword);
         inventory.addItem(chainMail);
@@ -40,7 +41,7 @@ public class GameRunner {
         System.out.println("========================================");
         System.out.println("   ENCOUNTER: A Goblin appears!");
         System.out.println("========================================");
-        Enemy goblin = new Enemy("Goblin", "easy");
+        Enemy goblin = factory.createGoblin(); 
         runBattle(player, goblin, summary);
         System.out.println();
 
@@ -62,7 +63,7 @@ public class GameRunner {
         System.out.println("========================================");
         System.out.println("   ENCOUNTER: A Troll appears!");
         System.out.println("========================================");
-        Enemy troll = new Enemy("Troll", "hard");
+        Enemy troll  = factory.createTroll();
         runBattle(player, troll, summary);
         System.out.println();
 

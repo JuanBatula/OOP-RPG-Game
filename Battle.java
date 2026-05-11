@@ -20,24 +20,21 @@ public class Battle {
         return Math.max(1, damage);
     }
 
-      public void performTurn() {
+    public void performTurn() {
         if (!battleActive) return;
-
-        int playerDamage = calculateTotalDamage(player, enemy);
-        // Record player damage in RunSummary
-        if (runSummary != null) runSummary.recordDamage(playerDamage);
-        enemy.takeDamage(playerDamage);
-
-        if (enemy.isAlive()) {
-            int enemyDamage = calculateTotalDamage(enemy, player);
-            player.takeDamage(enemyDamage);
+    
+        // Randomly decide turn order each round
+        boolean playerGoesFirst = Math.random() < 0.5;
+    
+        if (playerGoesFirst) {
+            resolvePlayerAttack();
+            if (enemy.isAlive()) resolveEnemyAttack();
+        } else {
+            System.out.println("[Turn order: " + enemy.getName() + " moves first!]");
+            resolveEnemyAttack();
+            if (player.isAlive()) resolvePlayerAttack();
         }
-
-        // Record kill if enemy is defeated
-        if (!enemy.isAlive()) {
-            if (runSummary != null) runSummary.recordKill();
-        }
-
+    
         if (checkBattleOver() != null) {
             battleActive = false;
         }
@@ -48,5 +45,17 @@ public class Battle {
         if (!enemy.isAlive()) return "player";
         if (!player.isAlive()) return "enemy";
         return null;
+    }
+
+    private void resolvePlayerAttack() {
+        int playerDamage = calculateTotalDamage(player, enemy);
+        if (runSummary != null) runSummary.recordDamage(playerDamage);
+        enemy.takeDamage(playerDamage);
+        if (!enemy.isAlive() && runSummary != null) runSummary.recordKill();
+    }
+ 
+    private void resolveEnemyAttack() {
+        int enemyDamage = calculateTotalDamage(enemy, player);
+        player.takeDamage(enemyDamage);
     }
 }

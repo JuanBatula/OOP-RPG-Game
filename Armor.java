@@ -8,8 +8,12 @@ public class Armor extends Item {
 
     @Override
     public void use(Player target) {
-        System.out.println(target.getName() + " equipped " + itemName +
-                ", but defense stat is not yet implemented in Character.");
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_CYAN,  target.getName())
+            + Fmt.c(Fmt.GREEN,   " equipped ")
+            + Fmt.c(Fmt.WHITE,   itemName)
+            + Fmt.c(Fmt.GREEN,   "!")
+            + Fmt.c(Fmt.DIM,     "  Defense bonus: +" + baseDefenseBonus));
     }
 
     public int getBaseDefenseBonus() { return baseDefenseBonus; }

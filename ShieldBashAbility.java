@@ -10,14 +10,19 @@ public class ShieldBashAbility extends Ability {
     @Override
     public void use(Character caster, Character target) {
         if (!isReady()) {
-            System.out.println(caster.getName() + " tried to use Shield Bash, but it's on cooldown! ("
-                    + currentCooldown + " turn(s) remaining)");
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.BR_RED, caster.getName() + " tried to use Shield Bash, but it's on cooldown!")
+                + Fmt.c(Fmt.DIM,    "  (" + currentCooldown + " turn(s) remaining)"));
             return;
         }
 
-        System.out.println(caster.getName() + " shield-bashes " + target.getName() + "!");
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_CYAN,  caster.getName())
+            + Fmt.c(Fmt.GREEN,   " shield-bashes ")
+            + Fmt.c(Fmt.B_RED,   target.getName())
+            + Fmt.c(Fmt.GREEN,   "!"));
 
-        // Physical damage — goes through normal takeDamage so defence applies
+        // Physical damage — defence applies via normal takeDamage
         target.takeDamage(BASE_DAMAGE);
 
         // Apply StunEffect if target is a Player

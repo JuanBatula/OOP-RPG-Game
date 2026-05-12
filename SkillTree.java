@@ -1,6 +1,6 @@
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Collection;
 
 public class SkillTree {
     private Map<String, Ability> unlockedAbilities;
@@ -11,32 +11,35 @@ public class SkillTree {
 
     /**
      * Unlocks an ability, keyed by its name (case-insensitive).
-     * If the ability is already unlocked, prints a notice and skips.
+     * If already unlocked, prints a notice and skips.
      */
     public void unlock(Ability ability) {
         String key = ability.getName().toLowerCase();
         if (unlockedAbilities.containsKey(key)) {
-            System.out.println(ability.getName() + " is already unlocked.");
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.DIM, ability.getName() + " is already unlocked."));
             return;
         }
         unlockedAbilities.put(key, ability);
-        System.out.println("Ability unlocked: " + ability.getName()
-                + " — " + ability.getDescription());
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_MAGENTA, "Ability unlocked: " + ability.getName())
+            + Fmt.c(Fmt.DIM,       " — " + ability.getDescription()));
     }
 
     /**
      * Returns the named ability if unlocked and ready, or null.
-     * Prints a helpful message when unavailable.
      */
     public Ability getAbility(String name) {
         Ability ability = unlockedAbilities.get(name.toLowerCase());
         if (ability == null) {
-            System.out.println("Ability \"" + name + "\" is not unlocked.");
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.BR_RED, "Ability \"" + name + "\" is not unlocked."));
             return null;
         }
         if (!ability.isReady()) {
-            System.out.println(ability.getName() + " is on cooldown ("
-                    + ability.getCurrentCooldown() + " turn(s) remaining).");
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.BR_RED, ability.getName() + " is on cooldown.")
+                + Fmt.c(Fmt.DIM,    "  (" + ability.getCurrentCooldown() + " turn(s) remaining)"));
             return null;
         }
         return ability;
@@ -46,7 +49,7 @@ public class SkillTree {
         return unlockedAbilities.containsKey(name.toLowerCase());
     }
 
-    /** Ticks the cooldown of every unlocked ability — call once per turn. */
+    /** Ticks cooldown of every unlocked ability — call once per turn. */
     public void tickAllCooldowns() {
         for (Ability ability : unlockedAbilities.values()) {
             ability.tickCooldown();
@@ -58,15 +61,20 @@ public class SkillTree {
     }
 
     public void printSkillTree() {
-        System.out.println("=== Skill Tree ===");
+        Fmt.printHeading("SKILL TREE");
         if (unlockedAbilities.isEmpty()) {
-            System.out.println("  (no abilities unlocked)");
+            Fmt.dim("(no abilities unlocked)");
             return;
         }
         for (Ability ability : unlockedAbilities.values()) {
-            String status = ability.isReady() ? "READY" : "Cooldown: " + ability.getCurrentCooldown();
-            System.out.println("  [" + ability.getName() + "] " + ability.getDescription()
-                    + " | " + status);
+            String status = ability.isReady()
+                    ? Fmt.c(Fmt.BR_GREEN, "READY")
+                    : Fmt.c(Fmt.BR_RED,   "Cooldown: " + ability.getCurrentCooldown());
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.B_MAGENTA, ability.getName())
+                + "  " + status);
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.DIM, "  " + ability.getDescription()));
         }
     }
 }

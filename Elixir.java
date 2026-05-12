@@ -1,8 +1,7 @@
-/*  Elixir — ConsumableItem that temporarily boosts the player's attack power.
-    The boost is permanent for the current run session (no expiry mechanic
-    needed here; Member 4's Ability system can handle timed buffs later).
-    Extends: ConsumableItem
-*/
+/**
+ * Elixir — ConsumableItem that permanently boosts the player's attack power
+ * for the current session.
+ */
 public class Elixir extends ConsumableItem {
     private static final int DEFAULT_ATTACK_BOOST = 5;
 
@@ -20,8 +19,13 @@ public class Elixir extends ConsumableItem {
     @Override
     protected void applyEffect(Player target) {
         target.addAttackPower(attackBoost);
-        System.out.println(target.getName() + " drank " + itemName +
-                " and gained +" + attackBoost + " attack power!");
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_CYAN,    target.getName())
+            + Fmt.c(Fmt.BR_YELLOW, " drank ")
+            + Fmt.c(Fmt.WHITE,     itemName)
+            + Fmt.c(Fmt.BR_YELLOW, " and gained +")
+            + Fmt.c(Fmt.BOLD,      String.valueOf(attackBoost))
+            + Fmt.c(Fmt.BR_YELLOW, " attack power!"));
     }
 
     public int getAttackBoost() { return attackBoost; }

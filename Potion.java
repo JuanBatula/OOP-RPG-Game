@@ -6,12 +6,16 @@ public class Potion extends Item {
         this.healAmount = healAmount;
     }
 
-
     @Override
     public void use(Player target) {
         target.heal(healAmount);
-        System.out.println(target.getName() + " used " + itemName +
-                " and restored " + healAmount + " HP!");
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_CYAN,  target.getName())
+            + Fmt.c(Fmt.GREEN,   " used ")
+            + Fmt.c(Fmt.WHITE,   itemName)
+            + Fmt.c(Fmt.GREEN,   " and restored ")
+            + Fmt.c(Fmt.BOLD,    String.valueOf(healAmount))
+            + Fmt.c(Fmt.GREEN,   " HP!"));
     }
 
     public int getHealAmount() { return healAmount; }

@@ -11,48 +11,53 @@ public class Inventory {
 
     public boolean addItem(Item item) {
         if (items.size() >= MAX_CAPACITY) {
-            System.out.println("Inventory is full! Cannot add " + item.getItemName() + ".");
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.BR_RED, "Inventory is full! Cannot add " + item.getItemName() + "."));
             return false;
         }
         items.add(item);
-        System.out.println(item.getItemName() + " added to inventory. (" + items.size() + "/" + MAX_CAPACITY + " slots used)");
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.GREEN, item.getItemName() + " added to inventory.")
+            + Fmt.c(Fmt.DIM,   "  (" + items.size() + "/" + MAX_CAPACITY + " slots)"));
         return true;
     }
 
     public boolean removeItem(Item item) {
         if (items.remove(item)) {
-            System.out.println(item.getItemName() + " removed from inventory.");
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.DIM, item.getItemName() + " removed from inventory."));
             return true;
         }
-        System.out.println(item.getItemName() + " not found in inventory.");
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.BR_RED, item.getItemName() + " not found in inventory."));
         return false;
     }
 
-    public List<Item> getItems() {
-        return new ArrayList<>(items);
-    }
+    public List<Item> getItems() { return new ArrayList<>(items); }
 
     public Item findItemByName(String name) {
         for (Item item : items) {
-            if (item.getItemName().equalsIgnoreCase(name)) {
-                return item;
-            }
+            if (item.getItemName().equalsIgnoreCase(name)) return item;
         }
         return null;
     }
 
-    public int getSize() { return items.size(); }
-    public int getCapacity() { return MAX_CAPACITY; }
-    public boolean isFull() { return items.size() >= MAX_CAPACITY; }
+    public int     getSize()     { return items.size();              }
+    public int     getCapacity() { return MAX_CAPACITY;              }
+    public boolean isFull()      { return items.size() >= MAX_CAPACITY; }
 
     public void printInventory() {
-        System.out.println("=== Inventory (" + items.size() + "/" + MAX_CAPACITY + ") ===");
+        Fmt.printHeading("INVENTORY  "
+            + Fmt.c(Fmt.DIM, "(" + items.size() + "/" + MAX_CAPACITY + ")"));
         if (items.isEmpty()) {
-            System.out.println("  (empty)");
+            Fmt.dim("(empty)");
         } else {
             for (int i = 0; i < items.size(); i++) {
                 Item item = items.get(i);
-                System.out.println("  [" + (i + 1) + "] " + item.getItemName() + " (value: " + item.getValue() + ")");
+                System.out.println(Fmt.INDENT
+                    + Fmt.c(Fmt.B_YELLOW, "[" + (i + 1) + "]")
+                    + Fmt.c(Fmt.WHITE,    " " + item.getItemName())
+                    + Fmt.c(Fmt.DIM,      "  " + item.getValue() + "g"));
             }
         }
     }

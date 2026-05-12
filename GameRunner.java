@@ -2,34 +2,52 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * GameRunner — interactive entry point for Chronicles of the Fallen.
+ *
+ * All console output goes through Fmt.* helpers so colour is applied
+ * consistently and can be toggled off with the --no-color CLI flag.
+ *
+ * Game logic lives in Battle, Player, Enemy, etc.
+ * This class orchestrates menus, input, flow, and display only.
+ */
 public class GameRunner {
 
+    // -------------------------------------------------------------------------
+    // Static game state
+    // -------------------------------------------------------------------------
     private static final Scanner scanner = new Scanner(System.in);
-    private static Player player;
-    private static Inventory inventory;
-    private static RunSummary summary;
-    private static EnemyFactory factory;
-    private static int currentLevel = 1;
-    private static int gold = 0;
+    private static Player        player;
+    private static Inventory     inventory;
+    private static RunSummary    summary;
+    private static EnemyFactory  factory;
+    private static int           currentLevel = 1;
+    private static int           gold         = 0;
 
     // =========================================================================
     // ENTRY POINT
     // =========================================================================
 
     public static void main(String[] args) {
+        // Honour --no-color flag or NO_COLOR env var (no-color.org convention)
+        for (String arg : args) {
+            if (arg.equalsIgnoreCase("--no-color")) { Fmt.COLOR = false; break; }
+        }
+        if (System.getenv("NO_COLOR") != null) Fmt.COLOR = false;
+
         printBanner();
         printStoryIntro();
 
-        summary = new RunSummary();
-        factory = new EnemyFactory();
+        summary  = new RunSummary();
+        factory  = new EnemyFactory();
 
         String playerName = promptPlayerName();
-        player = new Player(playerName, 100, 100, 10);
+        player    = new Player(playerName, 100, 100, 10);
         inventory = player.getInventory();
 
-        // Grant starting gear
-        Weapon startSword = new Weapon("Iron Sword", 50, 8);
-        Armor  startArmor = new Armor("Chain Mail", 75, 5);
+        // Starting gear
+        Weapon startSword  = new Weapon("Iron Sword",   50,  8);
+        Armor  startArmor  = new Armor ("Chain Mail",   75,  5);
         Potion startPotion = new Potion("Small Potion", 20, 30);
 
         inventory.addItem(startSword);
@@ -38,13 +56,12 @@ public class GameRunner {
 
         player.equipWeapon(startSword);
         player.equipArmor(startArmor);
-
-        // Unlock a starting ability
         player.unlockAbility(new FireballAbility());
 
-        printDivider();
-        System.out.println("  Welcome, " + playerName + "! Your journey begins...");
-        printDivider();
+        Fmt.blank();
+        Fmt.printDivider();
+        Fmt.narrate("Welcome, " + Fmt.c(Fmt.B_CYAN, playerName) + "! Your journey begins...");
+        Fmt.printDivider();
         pause();
 
         mainMenuLoop();
@@ -56,26 +73,34 @@ public class GameRunner {
 
     private static void mainMenuLoop() {
         while (true) {
-            printHeader("MAIN MENU");
-            System.out.println("  Gold: " + gold + "g   |   Level: " + player.getLevel()
-                    + "   |   HP: " + player.getHealth() + "/" + player.getMaxHealth());
-            printDivider();
-            System.out.println("  [1] Explore (find an enemy to fight)");
-            System.out.println("  [2] View Stats");
-            System.out.println("  [3] View Inventory");
-            System.out.println("  [4] View Abilities");
-            System.out.println("  [5] Save Game");
-            System.out.println("  [6] Quit");
-            printDivider();
+            Fmt.printHeading("MAIN MENU");
 
-            int choice = promptInt("Choose an option: ", 1, 6);
+            // Quick-glance status bar
+            String hpCode = hpColorCode(player.getHealth(), player.getMaxHealth());
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.BR_YELLOW, "Gold: " + gold + "g")
+                + Fmt.c(Fmt.DIM,       "   │   ")
+                + Fmt.c(Fmt.WHITE,     "Level " + player.getLevel())
+                + Fmt.c(Fmt.DIM,       "   │   ")
+                + Fmt.c(hpCode,        "HP: " + player.getHealth() + "/" + player.getMaxHealth()));
+            Fmt.blank();
+
+            printOpt(1, "Explore              — find an enemy to fight");
+            printOpt(2, "View Stats");
+            printOpt(3, "View Inventory");
+            printOpt(4, "View Abilities");
+            printOpt(5, "Save Game");
+            printOpt(6, "Quit");
+            Fmt.blank();
+
+            int choice = promptInt("Choose: ", 1, 6);
             switch (choice) {
-                case 1: exploreMenu();    break;
-                case 2: showStats();      break;
-                case 3: inventoryMenu();  break;
-                case 4: abilitiesMenu();  break;
-                case 5: saveGame();       break;
-                case 6: quitGame();       return;
+                case 1: exploreMenu();   break;
+                case 2: showStats();     break;
+                case 3: inventoryMenu(); break;
+                case 4: abilitiesMenu(); break;
+                case 5: saveGame();      break;
+                case 6: quitGame();      return;
             }
         }
     }
@@ -85,21 +110,34 @@ public class GameRunner {
     // =========================================================================
 
     private static void exploreMenu() {
-        printHeader("EXPLORE");
-        System.out.println("  You venture into the wilderness...");
-        System.out.println();
-        System.out.println("  [1] Search for Goblin  (Easy)");
-        System.out.println("  [2] Search for Troll   (Medium)");
-        System.out.println("  [3] Challenge the Boss (Hard)");
-        System.out.println("  [4] Back");
-        printDivider();
+        Fmt.printHeading("EXPLORE");
+        Fmt.narrate("You venture into the wilderness, senses sharp...");
+        Fmt.blank();
 
-        int choice = promptInt("Choose an enemy: ", 1, 4);
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_YELLOW, "[1]")
+            + Fmt.c(Fmt.WHITE,    " Goblin")
+            + Fmt.c(Fmt.DIM,      "  ·················  ")
+            + Fmt.c(Fmt.BR_GREEN, "Easy"));
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_YELLOW, "[2]")
+            + Fmt.c(Fmt.WHITE,    " Troll")
+            + Fmt.c(Fmt.DIM,      "   ·················  ")
+            + Fmt.c(Fmt.YELLOW,   "Medium"));
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_YELLOW, "[3]")
+            + Fmt.c(Fmt.WHITE,    " Boss")
+            + Fmt.c(Fmt.DIM,      "    ·················  ")
+            + Fmt.c(Fmt.BR_RED,   "Hard"));
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.DIM, "[4] Back"));
+        Fmt.blank();
+
+        int choice = promptInt("Choose enemy: ", 1, 4);
         if (choice == 4) return;
 
         String[] types = { "goblin", "troll", "boss" };
         Enemy enemy = factory.create(types[choice - 1], currentLevel);
-
         runBattle(enemy);
     }
 
@@ -108,9 +146,17 @@ public class GameRunner {
     // =========================================================================
 
     private static void runBattle(Enemy enemy) {
-        printHeader("BATTLE START");
-        System.out.println("  " + player.getName() + " vs " + enemy.getName() + "!");
-        printDivider();
+        Fmt.printHeading("BATTLE");
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_CYAN, player.getName())
+            + Fmt.c(Fmt.WHITE,  "  vs  ")
+            + Fmt.c(Fmt.B_RED,  enemy.getName() + "!"));
+        Fmt.blank();
+        Fmt.printHpBar(player.getName(), player.getHealth(), player.getMaxHealth());
+        Fmt.printHpBar(enemy.getName(),  enemy.getHealth(),  enemy.getMaxHealth());
+        Fmt.blank();
+        Fmt.printDivider();
+        pause();
 
         Battle battle = new Battle();
         battle.initializeBattle(player, enemy);
@@ -119,29 +165,30 @@ public class GameRunner {
         try {
             int turn = 1;
             while (battle.checkBattleOver() == null) {
-                printTurnHeader(turn, enemy);
+                Fmt.printTurnHeading(turn);
 
                 tickStatusEffects(player);
                 if (!player.isAlive()) break;
 
-                boolean acted = playerTurn(enemy, battle);
+                boolean acted = playerTurn(enemy);
 
                 if (acted && enemy.isAlive() && player.isAlive()) {
-                    enemyTurn(enemy, player);
+                    enemyTurn(enemy);
                 }
 
                 player.getSkillTree().tickAllCooldowns();
 
                 if (battle.checkBattleOver() != null) break;
-
                 turn++;
                 if (turn > 100) {
-                    System.out.println("\n  [The battle drags on too long — both sides retreat!]");
+                    Fmt.warn("The battle drags on endlessly — both sides retreat!");
                     return;
                 }
             }
         } catch (FleeException e) {
-            return; // Return cleanly to main menu
+            Fmt.narrate("You slip away into the shadows...");
+            pause();
+            return;
         }
 
         String result = battle.checkBattleOver();
@@ -154,154 +201,226 @@ public class GameRunner {
 
     private static void tickStatusEffects(Player p) {
         List<StatusEffect> effects = p.getStatusEffectManager().getActiveEffects();
-        if (!effects.isEmpty()) {
-            System.out.println("  [Status Effects ticking for " + p.getName() + "]");
-            p.getStatusEffectManager().tickAll(p);
-        }
+        if (effects.isEmpty()) return;
+        Fmt.status("― Status effects tick for " + p.getName() + " ―");
+        p.getStatusEffectManager().tickAll(p);
+        Fmt.blank();
     }
 
-    private static boolean playerTurn(Enemy enemy, Battle battle) {
+    // =========================================================================
+    // PLAYER TURN
+    // =========================================================================
+
+    private static boolean playerTurn(Enemy enemy) {
         while (true) {
-            printHeader("YOUR TURN");
-            printCombatStatus(player, enemy);
-            printPlayerMenu();
+            printCombatPanel(enemy);
+
+            System.out.println(Fmt.INDENT + Fmt.c(Fmt.B_YELLOW, "[1]") + Fmt.c(Fmt.WHITE, " Attack"));
+            System.out.println(Fmt.INDENT + Fmt.c(Fmt.B_YELLOW, "[2]") + Fmt.c(Fmt.WHITE, " Use Ability"));
+            System.out.println(Fmt.INDENT + Fmt.c(Fmt.B_YELLOW, "[3]") + Fmt.c(Fmt.WHITE, " Use Item"));
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.B_YELLOW, "[4]")
+                + Fmt.c(Fmt.DIM,      " Flee  (40% chance)"));
+            Fmt.blank();
 
             int choice = promptInt("Action: ", 1, 4);
-
             switch (choice) {
-                case 1: // Attack
-                    performPlayerAttack(enemy, battle);
+                case 1:
+                    performPlayerAttack(enemy);
                     return true;
-
-                case 2: // Use Ability
+                case 2:
                     if (useAbilityMenu(enemy)) return true;
-                    break; // re-show menu if no ability used
-
-                case 3: // Use Item
+                    break;
+                case 3:
                     if (useItemMenu()) return true;
                     break;
-
-                case 4: // Flee
-                    if (tryFlee()) return false;
+                case 4:
+                    tryFlee(); // throws FleeException on success; returns false on failure
                     break;
             }
         }
     }
 
-    private static void performPlayerAttack(Enemy enemy, Battle battle) {
-        int damage = player.calculateTotalDamage() - enemy.getDefense();
-        damage = Math.max(1, damage);
-        System.out.println();
-        System.out.println("  " + player.getName() + " attacks " + enemy.getName()
-                + " for " + damage + " damage!");
-        enemy.takeDamage(player.calculateTotalDamage()); // uses Enemy.takeDamage which applies defense
+    private static void printCombatPanel(Enemy enemy) {
+        Fmt.printDivider();
+        Fmt.printHpBar(player.getName(), player.getHealth(), player.getMaxHealth());
+        Fmt.printHpBar(enemy.getName(),  enemy.getHealth(),  enemy.getMaxHealth());
+
+        List<StatusEffect> effects = player.getStatusEffectManager().getActiveEffects();
+        if (!effects.isEmpty()) {
+            StringBuilder sb = new StringBuilder(Fmt.INDENT);
+            for (StatusEffect se : effects) {
+                sb.append(Fmt.c(Fmt.MAGENTA, "[" + se.getEffectName() + " " + se.getDuration() + "t] "));
+            }
+            System.out.println(sb);
+        }
+        Fmt.printDivider();
+    }
+
+    // ---- Attack -------------------------------------------------------------
+
+    private static void performPlayerAttack(Enemy enemy) {
+        int raw    = player.calculateTotalDamage();
+        int damage = Math.max(1, raw - enemy.getDefense());
+        Fmt.blank();
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_CYAN, player.getName())
+            + Fmt.c(Fmt.GREEN,  " strikes ")
+            + Fmt.c(Fmt.B_RED,  enemy.getName())
+            + Fmt.c(Fmt.GREEN,  " for ")
+            + Fmt.c(Fmt.BOLD,   String.valueOf(damage))
+            + Fmt.c(Fmt.GREEN,  " damage!"));
+        enemy.takeDamage(raw);   // takeDamage applies defense internally
         summary.recordDamage(damage);
         if (!enemy.isAlive()) summary.recordKill();
+        Fmt.blank();
     }
+
+    // ---- Ability menu -------------------------------------------------------
 
     private static boolean useAbilityMenu(Enemy enemy) {
         List<Ability> abilities = new ArrayList<>(player.getSkillTree().getAllAbilities());
         if (abilities.isEmpty()) {
-            System.out.println("\n  You have no abilities unlocked!");
+            Fmt.warn("You have no abilities unlocked!");
             pause();
             return false;
         }
 
-        printHeader("USE ABILITY");
+        Fmt.printHeading("USE ABILITY");
         for (int i = 0; i < abilities.size(); i++) {
-            Ability a = abilities.get(i);
-            String status = a.isReady() ? "READY" : "Cooldown: " + a.getCurrentCooldown() + " turn(s)";
-            System.out.println("  [" + (i + 1) + "] " + a.getName()
-                    + " — " + a.getDescription() + " | " + status);
+            Ability a   = abilities.get(i);
+            String ready = a.isReady()
+                    ? Fmt.c(Fmt.BR_GREEN, "READY")
+                    : Fmt.c(Fmt.BR_RED,   "Cooldown: " + a.getCurrentCooldown() + "t");
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.B_YELLOW, "[" + (i + 1) + "]")
+                + Fmt.c(Fmt.WHITE,    " " + a.getName())
+                + "  " + ready);
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.DIM, "    " + a.getDescription()));
         }
-        System.out.println("  [" + (abilities.size() + 1) + "] Cancel");
-        printDivider();
+        int cancel = abilities.size() + 1;
+        System.out.println(Fmt.INDENT + Fmt.c(Fmt.DIM, "[" + cancel + "] Cancel"));
+        Fmt.blank();
 
-        int choice = promptInt("Choose ability: ", 1, abilities.size() + 1);
-        if (choice == abilities.size() + 1) return false;
+        int choice = promptInt("Choose ability: ", 1, cancel);
+        if (choice == cancel) return false;
 
         Ability chosen = abilities.get(choice - 1);
         if (!chosen.isReady()) {
-            System.out.println("\n  " + chosen.getName() + " is still on cooldown!");
+            Fmt.warn(chosen.getName() + " is still on cooldown!");
             pause();
             return false;
         }
 
+        Fmt.blank();
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_CYAN,    player.getName())
+            + Fmt.c(Fmt.MAGENTA,   " uses ")
+            + Fmt.c(Fmt.B_MAGENTA, chosen.getName()) + Fmt.c(Fmt.MAGENTA, "!"));
         chosen.use(player, enemy);
+        Fmt.blank();
         return true;
     }
 
-    private static boolean useItemMenu() {
-        List<Item> items = inventory.getItems();
-        if (items.isEmpty()) {
-            System.out.println("\n  Your inventory is empty!");
-            pause();
-            return false;
-        }
+    // ---- Item menu ----------------------------------------------------------
 
-        // Filter to usable items only
+    private static boolean useItemMenu() {
         List<Item> usable = new ArrayList<>();
-        for (Item item : items) {
+        for (Item item : inventory.getItems()) {
             if (item instanceof Potion || item instanceof Elixir || item instanceof Antidote) {
                 usable.add(item);
             }
         }
 
         if (usable.isEmpty()) {
-            System.out.println("\n  No usable consumable items in inventory!");
+            Fmt.warn("No usable consumable items in your inventory!");
             pause();
             return false;
         }
 
-        printHeader("USE ITEM");
+        Fmt.printHeading("USE ITEM");
         for (int i = 0; i < usable.size(); i++) {
             Item it = usable.get(i);
-            String detail = "";
-            if (it instanceof Potion)   detail = " (Heals " + ((Potion) it).getHealAmount() + " HP)";
-            if (it instanceof Elixir)   detail = " (+ATK " + ((Elixir) it).getAttackBoost() + ")";
-            if (it instanceof Antidote) detail = " (Clears status effects)";
-            System.out.println("  [" + (i + 1) + "] " + it.getItemName() + detail);
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.B_YELLOW, "[" + (i + 1) + "]")
+                + Fmt.c(Fmt.WHITE,    " " + it.getItemName())
+                + Fmt.c(Fmt.DIM,      itemDetail(it)));
         }
-        System.out.println("  [" + (usable.size() + 1) + "] Cancel");
-        printDivider();
+        int cancel = usable.size() + 1;
+        System.out.println(Fmt.INDENT + Fmt.c(Fmt.DIM, "[" + cancel + "] Cancel"));
+        Fmt.blank();
 
-        int choice = promptInt("Choose item: ", 1, usable.size() + 1);
-        if (choice == usable.size() + 1) return false;
+        int choice = promptInt("Choose item: ", 1, cancel);
+        if (choice == cancel) return false;
 
         Item chosen = usable.get(choice - 1);
+        Fmt.blank();
         chosen.use(player);
         inventory.removeItem(chosen);
+        Fmt.blank();
         return true;
     }
 
-    // Thrown when the player successfully flees a battle
+    private static String itemDetail(Item it) {
+        if (it instanceof Potion)   return "  — Heals " + ((Potion) it).getHealAmount() + " HP";
+        if (it instanceof Elixir)   return "  — +" + ((Elixir) it).getAttackBoost() + " Attack Power";
+        if (it instanceof Antidote) return "  — Clears all status effects";
+        return "";
+    }
+
+    // ---- Flee ---------------------------------------------------------------
+
+    // Thrown on successful flee to unwind the battle loop cleanly.
     private static class FleeException extends RuntimeException {}
 
-    private static boolean tryFlee() {
-        double fleeChance = 0.40;
-        System.out.println();
-        if (Math.random() < fleeChance) {
-            System.out.println("  You successfully flee from battle!");
-            pause();
+    private static void tryFlee() {
+        Fmt.blank();
+        if (Math.random() < 0.40) {
+            Fmt.success("You break away from the fight!");
             throw new FleeException();
         } else {
-            System.out.println("  You failed to flee! The enemy blocks your escape.");
+            Fmt.danger("The enemy cuts off your escape!");
             pause();
-            return false;
         }
     }
 
-    private static void enemyTurn(Enemy enemy, Player p) {
-        printHeader("ENEMY TURN — " + enemy.getName().toUpperCase());
+    // =========================================================================
+    // ENEMY TURN
+    // =========================================================================
+
+    private static void enemyTurn(Enemy enemy) {
+        Fmt.printDivider();
+        System.out.println(Fmt.INDENT + Fmt.c(Fmt.B_RED, enemy.getName() + "'s turn!"));
+        Fmt.blank();
+
         int damage = enemy.getAttackDamage(enemy.getHealth(), enemy.getMaxHealth());
-        if (damage > 0) {
-            p.takeDamage(damage);
+
+        if (damage == 0) {
+            // Troll miss — the Troll class prints its own "misses!" line
+            Fmt.blank();
+        } else {
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.B_RED, enemy.getName())
+                + Fmt.c(Fmt.RED,   " attacks for ")
+                + Fmt.c(Fmt.BOLD,  String.valueOf(damage))
+                + Fmt.c(Fmt.RED,   " damage!"));
+            player.takeDamage(damage);
+
+            // Critical HP warning (≤ 25%)
+            if (player.isAlive()
+                    && (double) player.getHealth() / player.getMaxHealth() <= 0.25) {
+                Fmt.blank();
+                Fmt.warn("⚠  " + player.getName() + " is critically wounded!");
+            }
         }
-        // Enemy ability: chance to apply poison (for flavour / uses existing system)
+
+        // 15% chance to apply Poison
         if (Math.random() < 0.15) {
-            PoisonEffect poison = new PoisonEffect();
-            p.getStatusEffectManager().addEffect(poison, p);
+            Fmt.blank();
+            player.getStatusEffectManager().addEffect(new PoisonEffect(), player);
         }
+        Fmt.blank();
     }
 
     // =========================================================================
@@ -309,32 +428,37 @@ public class GameRunner {
     // =========================================================================
 
     private static void onVictory(Enemy enemy) {
-        int xp = enemy.getExpValue();
-        int goldEarned = enemy.getExpValue() / 5 + (int)(Math.random() * 20);
+        int xp         = enemy.getExpValue();
+        int goldEarned = xp / 5 + (int)(Math.random() * 20);
 
-        printHeader("VICTORY!");
-        System.out.println("  " + player.getName() + " defeated " + enemy.getName() + "!");
-        System.out.println("  Rewards: +" + xp + " EXP  |  +" + goldEarned + " gold");
-        printDivider();
+        Fmt.printVictoryBanner(enemy.getName());
+
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.BR_YELLOW, "+" + xp + " EXP")
+            + Fmt.c(Fmt.DIM,       "   │   ")
+            + Fmt.c(Fmt.BR_YELLOW, "+" + goldEarned + " gold"));
+        Fmt.blank();
 
         gold += goldEarned;
         int oldLevel = player.getLevel();
         player.gainExp(xp);
         if (player.getLevel() > oldLevel) {
-            onLevelUp();
+            onLevelUp(oldLevel, player.getLevel());
         }
 
         summary.recordStageCleared();
         currentLevel++;
 
-        // Random item drop
+        // 50% item drop
         if (Math.random() < 0.50) {
             Item drop = randomDrop();
+            Fmt.blank();
             if (!inventory.isFull()) {
                 inventory.addItem(drop);
-                System.out.println("  Item dropped: " + drop.getItemName() + "!");
+                System.out.println(Fmt.INDENT
+                    + Fmt.c(Fmt.BR_YELLOW, "★  Item dropped: " + drop.getItemName() + "!"));
             } else {
-                System.out.println("  " + drop.getItemName() + " dropped but inventory is full!");
+                Fmt.warn("Item dropped but inventory is full: " + drop.getItemName());
             }
         }
 
@@ -343,36 +467,36 @@ public class GameRunner {
 
     private static Item randomDrop() {
         double r = Math.random();
-        if (r < 0.4) return new Potion("Health Potion", 20, 40);
-        if (r < 0.6) return new Elixir("Power Elixir", 30, 3);
-        if (r < 0.8) return new Antidote("Antidote", 15);
+        if (r < 0.40) return new Potion("Health Potion", 20, 40);
+        if (r < 0.60) return new Elixir("Power Elixir",  30,  3);
+        if (r < 0.80) return new Antidote("Antidote",    15);
         return new Weapon("Sharp Dagger", 60, 5);
     }
 
-    private static void onLevelUp() {
-        printHeader("LEVEL UP!");
-        System.out.println("  " + player.getName() + " is now Level " + player.getLevel() + "!");
-        System.out.println("  Max HP increased! Attack Power increased!");
-        printDivider();
+    private static void onLevelUp(int oldLevel, int newLevel) {
+        Fmt.printLevelUpBanner(oldLevel, newLevel);
+        Fmt.gold("Max HP +10   ·   Attack Power +2");
+        Fmt.blank();
 
-        // Unlock new ability at certain levels
-        if (player.getLevel() == 2) {
+        if (newLevel == 2) {
             player.unlockAbility(new ShieldBashAbility());
-            System.out.println("  New ability unlocked: Shield Bash!");
+            Fmt.printAbilityUnlocked("Shield Bash");
         }
-        pause();
     }
 
     private static void onDefeat() {
-        printHeader("DEFEAT");
-        System.out.println("  " + player.getName() + " has fallen...");
-        printDivider();
+        Fmt.printDefeatBanner();
         summary.printReport();
 
-        System.out.println("  [1] Restart");
-        System.out.println("  [2] Quit");
+        Fmt.blank();
+        printOpt(1, "Try again");
+        printOpt(2, "Quit");
+        Fmt.blank();
+
         int choice = promptInt("Choose: ", 1, 2);
         if (choice == 1) {
+            currentLevel = 1;
+            gold         = 0;
             main(new String[]{});
         } else {
             quitGame();
@@ -384,73 +508,112 @@ public class GameRunner {
     // =========================================================================
 
     private static void showStats() {
-        printHeader("CHARACTER STATS");
-        System.out.println("  Name:    " + player.getName());
-        System.out.println("  Level:   " + player.getLevel());
-        System.out.println("  HP:      " + player.getHealth() + " / " + player.getMaxHealth());
-        System.out.println("  ATK:     " + player.calculateTotalDamage()
-                + " (base: " + player.getBaseAttackPower() + ")");
-        System.out.println("  DEF:     " + player.getDefense());
-        System.out.println("  EXP:     " + player.getExp() + " / 100");
-        System.out.println("  Gold:    " + gold + "g");
-        System.out.println("  Weapon:  " + (player.getEquippedWeapon() != null
-                ? player.getEquippedWeapon().getItemName() : "none"));
-        System.out.println("  Armor:   " + (player.getEquippedArmor() != null
-                ? player.getEquippedArmor().getItemName() : "none"));
-        System.out.println("  Status:");
-        player.getStatusEffectManager().printEffects();
-        printDivider();
+        Fmt.printHeading("CHARACTER STATS");
+
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_CYAN,    player.getName())
+            + Fmt.c(Fmt.DIM,       "   ·   ")
+            + Fmt.c(Fmt.BR_YELLOW, "Level " + player.getLevel()));
+        Fmt.blank();
+
+        Fmt.printHpBar("HP", player.getHealth(), player.getMaxHealth());
+        Fmt.blank();
+
+        statRow("Attack",   player.calculateTotalDamage()
+                            + Fmt.c(Fmt.DIM, " (base " + player.getBaseAttackPower() + ")"));
+        statRow("Defense",  String.valueOf(player.getDefense()));
+        statRow("EXP",      player.getExp() + Fmt.c(Fmt.DIM, " / 100"));
+        statRow("Gold",     Fmt.c(Fmt.BR_YELLOW, gold + "g"));
+        statRow("Weapon",   player.getEquippedWeapon() != null
+                            ? player.getEquippedWeapon().getItemName()
+                            : Fmt.c(Fmt.DIM, "none"));
+        statRow("Armor",    player.getEquippedArmor() != null
+                            ? player.getEquippedArmor().getItemName()
+                            : Fmt.c(Fmt.DIM, "none"));
+        Fmt.blank();
+
+        List<StatusEffect> effects = player.getStatusEffectManager().getActiveEffects();
+        if (effects.isEmpty()) {
+            statRow("Status", Fmt.c(Fmt.DIM, "none"));
+        } else {
+            for (StatusEffect se : effects) {
+                Fmt.status("  [" + se.getEffectName() + "]  "
+                        + se.getDuration() + " turn(s) remaining");
+            }
+        }
+
+        Fmt.blank();
+        Fmt.printDivider();
         promptEnter();
     }
 
+    private static void statRow(String label, String value) {
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.YELLOW, String.format("%-10s", label))
+            + Fmt.c(Fmt.WHITE,  value));
+    }
+
+    // ---- Inventory ----------------------------------------------------------
+
     private static void inventoryMenu() {
         while (true) {
-            printHeader("INVENTORY (" + inventory.getSize() + "/" + inventory.getCapacity() + ")");
+            String cap = Fmt.c(Fmt.DIM, "(" + inventory.getSize() + "/" + inventory.getCapacity() + ")");
+            Fmt.printHeading("INVENTORY  " + cap);
+
             List<Item> items = inventory.getItems();
             if (items.isEmpty()) {
-                System.out.println("  (empty)");
+                Fmt.dim("(empty)");
             } else {
                 for (int i = 0; i < items.size(); i++) {
-                    Item item = items.get(i);
-                    String tag = "";
-                    if (item == player.getEquippedWeapon()) tag = " [E]";
-                    if (item == player.getEquippedArmor())  tag = " [E]";
-                    System.out.println("  [" + (i + 1) + "] " + item.getItemName()
-                            + tag + "  (value: " + item.getValue() + "g)");
+                    Item it = items.get(i);
+                    String eq = (it == player.getEquippedWeapon() || it == player.getEquippedArmor())
+                            ? "  " + Fmt.c(Fmt.BR_GREEN, "[E]") : "";
+                    System.out.println(Fmt.INDENT
+                        + Fmt.c(Fmt.B_YELLOW, "[" + (i + 1) + "]")
+                        + Fmt.c(Fmt.WHITE,    " " + it.getItemName())
+                        + eq
+                        + Fmt.c(Fmt.DIM,      "  " + it.getValue() + "g"));
                 }
             }
-            printDivider();
-            System.out.println("  [E] Equip a Weapon/Armor");
-            System.out.println("  [B] Back");
-            printDivider();
+
+            Fmt.blank();
+            Fmt.printDivider();
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.B_YELLOW, "[E]") + Fmt.c(Fmt.WHITE, " Equip Weapon/Armor"));
+            System.out.println(Fmt.INDENT + Fmt.c(Fmt.DIM, "[B] Back"));
+            Fmt.blank();
 
             String input = promptString("Choose: ").trim().toUpperCase();
+
             if (input.equals("B")) return;
             if (input.equals("E")) { equipMenu(); continue; }
 
-            // Try numeric selection for item detail
             try {
                 int idx = Integer.parseInt(input) - 1;
                 if (idx >= 0 && idx < items.size()) {
                     showItemDetail(items.get(idx));
                 } else {
-                    System.out.println("  Invalid choice.");
+                    Fmt.warn("Invalid selection — enter 1–" + items.size() + ", E, or B.");
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("  Invalid choice.");
+            } catch (NumberFormatException ex) {
+                Fmt.warn("Invalid input — enter a number, E, or B.");
             }
         }
     }
 
     private static void showItemDetail(Item item) {
-        printHeader(item.getItemName().toUpperCase());
-        System.out.println("  Type:  " + item.getClass().getSimpleName());
-        System.out.println("  Value: " + item.getValue() + "g");
-        if (item instanceof Weapon)  System.out.println("  Bonus Damage: +" + ((Weapon) item).getBonusDamage());
-        if (item instanceof Armor)   System.out.println("  Defense Bonus: +" + ((Armor) item).getBaseDefenseBonus());
-        if (item instanceof Potion)  System.out.println("  Heals: " + ((Potion) item).getHealAmount() + " HP");
-        if (item instanceof Elixir)  System.out.println("  Attack Boost: +" + ((Elixir) item).getAttackBoost());
-        printDivider();
+        Fmt.printHeading(item.getItemName().toUpperCase());
+        statRow("Type",       item.getClass().getSimpleName());
+        statRow("Value",      item.getValue() + "g");
+        if (item instanceof Weapon)
+            statRow("Dmg Bonus",  "+" + ((Weapon) item).getBonusDamage());
+        if (item instanceof Armor)
+            statRow("Def Bonus",  "+" + ((Armor)  item).getBaseDefenseBonus());
+        if (item instanceof Potion)
+            statRow("Heals",      ((Potion) item).getHealAmount() + " HP");
+        if (item instanceof Elixir)
+            statRow("Atk Boost", "+" + ((Elixir) item).getAttackBoost());
+        Fmt.blank();
         promptEnter();
     }
 
@@ -461,44 +624,64 @@ public class GameRunner {
         }
 
         if (equipable.isEmpty()) {
-            System.out.println("\n  No weapons or armor in inventory.");
+            Fmt.warn("No weapons or armor in inventory.");
             pause();
             return;
         }
 
-        printHeader("EQUIP GEAR");
+        Fmt.printHeading("EQUIP GEAR");
         for (int i = 0; i < equipable.size(); i++) {
             Item it = equipable.get(i);
-            String eq = (it == player.getEquippedWeapon() || it == player.getEquippedArmor()) ? " [EQUIPPED]" : "";
-            System.out.println("  [" + (i + 1) + "] " + it.getItemName() + eq);
+            boolean isE = (it == player.getEquippedWeapon() || it == player.getEquippedArmor());
+            String tag  = isE ? "  " + Fmt.c(Fmt.BR_GREEN, "[EQUIPPED]") : "";
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.B_YELLOW, "[" + (i + 1) + "]")
+                + Fmt.c(Fmt.WHITE,    " " + it.getItemName())
+                + tag);
         }
-        System.out.println("  [" + (equipable.size() + 1) + "] Cancel");
-        printDivider();
+        int cancel = equipable.size() + 1;
+        System.out.println(Fmt.INDENT + Fmt.c(Fmt.DIM, "[" + cancel + "] Cancel"));
+        Fmt.blank();
 
-        int choice = promptInt("Choose: ", 1, equipable.size() + 1);
-        if (choice == equipable.size() + 1) return;
+        int choice = promptInt("Equip: ", 1, cancel);
+        if (choice == cancel) return;
 
         Item chosen = equipable.get(choice - 1);
-        if (chosen instanceof Weapon) player.equipWeapon((Weapon) chosen);
-        else if (chosen instanceof Armor) player.equipArmor((Armor) chosen);
+        if (chosen instanceof Weapon) {
+            player.equipWeapon((Weapon) chosen);
+            Fmt.success("Weapon equipped: " + chosen.getItemName());
+        } else {
+            player.equipArmor((Armor) chosen);
+            Fmt.success("Armor equipped: " + chosen.getItemName());
+        }
         pause();
     }
 
+    // ---- Abilities ----------------------------------------------------------
+
     private static void abilitiesMenu() {
-        printHeader("ABILITIES");
+        Fmt.printHeading("ABILITIES");
+
         List<Ability> abilities = new ArrayList<>(player.getSkillTree().getAllAbilities());
         if (abilities.isEmpty()) {
-            System.out.println("  No abilities unlocked yet.");
+            Fmt.dim("No abilities unlocked yet. Level up to unlock them.");
         } else {
             for (Ability a : abilities) {
-                String status = a.isReady() ? "READY" : "Cooldown: " + a.getCurrentCooldown() + " turn(s)";
-                System.out.println("  " + a.getName() + " [" + status + "]");
-                System.out.println("    " + a.getDescription());
-                System.out.println("    Cooldown: " + a.getCooldown() + " turn(s) after use");
-                System.out.println();
+                String ready = a.isReady()
+                        ? Fmt.c(Fmt.BR_GREEN, "READY")
+                        : Fmt.c(Fmt.BR_RED,   "Cooldown: " + a.getCurrentCooldown() + "t");
+                System.out.println(Fmt.INDENT
+                    + Fmt.c(Fmt.B_MAGENTA, a.getName())
+                    + "  " + ready);
+                System.out.println(Fmt.INDENT
+                    + Fmt.c(Fmt.DIM, "  " + a.getDescription()));
+                System.out.println(Fmt.INDENT
+                    + Fmt.c(Fmt.DIM, "  Cooldown: " + a.getCooldown() + " turn(s) after use"));
+                Fmt.blank();
             }
         }
-        printDivider();
+
+        Fmt.printDivider();
         promptEnter();
     }
 
@@ -507,117 +690,117 @@ public class GameRunner {
     // =========================================================================
 
     private static void saveGame() {
-        printHeader("SAVE GAME");
-        GameState gs = new GameState();
-        gs.save(player, inventory, currentLevel, "savegame.txt");
-        System.out.println("  Game saved successfully!");
+        Fmt.printHeading("SAVE GAME");
+        new GameState().save(player, inventory, currentLevel, "savegame.txt");
+        Fmt.success("Game saved to  savegame.txt");
         pause();
     }
 
     private static void quitGame() {
-        printHeader("GAME OVER");
+        Fmt.printHeading("FAREWELL");
         summary.printReport();
-        System.out.println("  Thanks for playing! Farewell, " + player.getName() + ".");
-        printDivider();
+        Fmt.narrate("Thanks for playing, "
+            + Fmt.c(Fmt.B_CYAN, player.getName()) + ". Until next time.");
+        Fmt.blank();
         scanner.close();
         System.exit(0);
     }
 
     // =========================================================================
-    // UI HELPERS
+    // INTRO SCREENS
     // =========================================================================
 
     private static void printBanner() {
-        System.out.println();
-        System.out.println("  ╔══════════════════════════════════════════╗");
-        System.out.println("  ║         CHRONICLES OF THE FALLEN         ║");
-        System.out.println("  ║           A Text-Based Java RPG           ║");
-        System.out.println("  ╚══════════════════════════════════════════╝");
-        System.out.println();
+        Fmt.blank();
+        String tl = "  ╔══════════════════════════════════════════════════╗";
+        String m1 = "  ║       CHRONICLES  OF  THE  FALLEN                ║";
+        String m2 = "  ║            A Text-Based Java RPG                 ║";
+        String bl = "  ╚══════════════════════════════════════════════════╝";
+        System.out.println(Fmt.c(Fmt.B_CYAN, tl));
+        System.out.println(Fmt.c(Fmt.B_CYAN, m1));
+        System.out.println(Fmt.c(Fmt.B_CYAN, m2));
+        System.out.println(Fmt.c(Fmt.B_CYAN, bl));
+        Fmt.blank();
+        if (Fmt.COLOR) {
+            Fmt.dim("Tip: run with --no-color if your terminal doesn't support ANSI codes.");
+        }
+        Fmt.blank();
     }
 
     private static void printStoryIntro() {
-        System.out.println("  The kingdom is in ruins. Dark creatures roam the land.");
-        System.out.println("  You are the last hero brave enough to face them.");
-        System.out.println("  Fight. Level up. Survive.");
-        System.out.println();
+        Fmt.narrate("The kingdom is in ruins. Dark creatures roam the land.");
+        Fmt.narrate("Villages burn. Hope is ash.");
+        Fmt.narrate("You are the last hero brave enough to face them.");
+        Fmt.blank();
+        Fmt.narrate("Fight. Level up. Survive.");
+        Fmt.blank();
     }
 
-    private static void printDivider() {
-        System.out.println("  ------------------------------------------");
+    private static String promptPlayerName() {
+        System.out.print(Fmt.INDENT
+            + Fmt.c(Fmt.B_YELLOW, "▶ ")
+            + Fmt.c(Fmt.WHITE, "Enter your hero's name: "));
+        String name = scanner.nextLine().trim();
+        return name.isEmpty() ? "Hero" : name;
     }
 
-    private static void printHeader(String title) {
-        System.out.println();
-        System.out.println("  ==========================================");
-        System.out.printf("  %-42s%n", "  " + title);
-        System.out.println("  ==========================================");
+    // =========================================================================
+    // PRIVATE HELPERS
+    // =========================================================================
+
+    /** Returns the ANSI colour code appropriate for this HP percentage. */
+    private static String hpColorCode(int current, int max) {
+        double pct = (double) current / Math.max(1, max);
+        if (pct > 0.50) return Fmt.GREEN;
+        if (pct > 0.25) return Fmt.YELLOW;
+        return Fmt.BR_RED;
     }
 
-    private static void printTurnHeader(int turn, Enemy enemy) {
-        System.out.println();
-        System.out.println("  --- Turn " + turn + " -------------------------------------------");
-    }
-
-    private static void printCombatStatus(Player p, Enemy e) {
-        System.out.println("  " + p.getName() + " HP: " + p.getHealth() + "/" + p.getMaxHealth()
-                + "  |  " + e.getName() + " HP: " + e.getHealth() + "/" + e.getMaxHealth());
-        List<StatusEffect> effects = p.getStatusEffectManager().getActiveEffects();
-        if (!effects.isEmpty()) {
-            System.out.print("  Status: ");
-            for (StatusEffect se : effects) {
-                System.out.print("[" + se.getEffectName() + " " + se.getDuration() + "t] ");
-            }
-            System.out.println();
-        }
-        printDivider();
-    }
-
-    private static void printPlayerMenu() {
-        System.out.println("  [1] Attack");
-        System.out.println("  [2] Use Ability");
-        System.out.println("  [3] Use Item");
-        System.out.println("  [4] Flee (40% chance)");
-        printDivider();
+    /** Prints a numbered menu option. */
+    private static void printOpt(int n, String label) {
+        System.out.println(Fmt.INDENT
+            + Fmt.c(Fmt.B_YELLOW, "[" + n + "]")
+            + Fmt.c(Fmt.WHITE,    " " + label));
     }
 
     // =========================================================================
     // INPUT HELPERS
     // =========================================================================
 
-    private static String promptPlayerName() {
-        System.out.print("  Enter your hero's name: ");
-        String name = scanner.nextLine().trim();
-        if (name.isEmpty()) name = "Hero";
-        return name;
-    }
-
+    /** Prompts for an integer in [min, max], re-prompting on bad input. */
     private static int promptInt(String prompt, int min, int max) {
         while (true) {
-            System.out.print("  " + prompt);
+            System.out.print(Fmt.INDENT
+                + Fmt.c(Fmt.B_YELLOW, "▶ ")
+                + Fmt.c(Fmt.WHITE, prompt));
             String line = scanner.nextLine().trim();
             try {
                 int val = Integer.parseInt(line);
                 if (val >= min && val <= max) return val;
-                System.out.println("  Please enter a number between " + min + " and " + max + ".");
+                Fmt.warn("Enter a number between " + min + " and " + max + ".");
             } catch (NumberFormatException e) {
-                System.out.println("  Invalid input — please enter a number.");
+                Fmt.warn("Invalid input — please enter a number.");
             }
         }
     }
 
+    /** Prompts for a raw string. */
     private static String promptString(String prompt) {
-        System.out.print("  " + prompt);
+        System.out.print(Fmt.INDENT
+            + Fmt.c(Fmt.B_YELLOW, "▶ ")
+            + Fmt.c(Fmt.WHITE, prompt));
         return scanner.nextLine();
     }
 
+    /** "Press Enter to continue" gate. */
     private static void promptEnter() {
-        System.out.print("  Press Enter to continue...");
+        System.out.print(Fmt.INDENT + Fmt.c(Fmt.DIM, "Press Enter to continue..."));
         scanner.nextLine();
     }
 
+    /** Short sleep, then Enter gate — called after key events for pacing. */
     private static void pause() {
-        try { Thread.sleep(400); } catch (InterruptedException ignored) {}
+        try { Thread.sleep(350); } catch (InterruptedException ignored) {}
         promptEnter();
     }
 }

@@ -1,4 +1,4 @@
-NAME:Sh1su
+NAME:juan
 LEVEL:2
 HP:99
 MAXHP:100
@@ -10,5 +10,5 @@ ARMOR:Chain Mail|75|5
 ITEM:Weapon|Iron Sword|50|8
 ITEM:Armor|Chain Mail|75|5
 ITEM:Potion|Small Potion|20|30
-ITEM:Antidote|Antidote|15|0
+ITEM:Elixir|Power Elixir|30|3
 END

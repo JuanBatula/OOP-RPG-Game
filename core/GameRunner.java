@@ -720,33 +720,42 @@ public class GameRunner {
                     + inventory.getSize() + "/" + inventory.getCapacity()));
             Fmt.blank();
 
-            List<Shop.ShopItem> stock = shop.getStock();
-            for (int i = 0; i < stock.size(); i++) {
-            Shop.ShopItem si = stock.get(i);
-            String afford = (gold >= si.price)
-                    ? Fmt.c(Fmt.BR_YELLOW, si.price + "g")
-                    : Fmt.c(Fmt.DIM,       si.price + "g");
-            String detail = shopItemDetail(si.item);
+            
+        }
+    }
+
+    private static void shopBuyMenu() {
+        while (true) {
+            Fmt.printHeading("SHOP  —  BUY");
 
             System.out.println(Fmt.INDENT
-                + Fmt.c(Fmt.B_YELLOW, "[" + (i + 1) + "]")
-                + Fmt.c(Fmt.WHITE,    "  " + String.format("%-18s", si.item.getItemName()))
-                + afford
-                + Fmt.c(Fmt.DIM,     "   " + detail));
+                + Fmt.c(Fmt.BR_YELLOW, "Gold: " + gold + "g"));
+            Fmt.blank();
+
+            List<Shop.ShopItem> stock = shop.getStock();
+            for (int i = 0; i < stock.size(); i++) {
+                Shop.ShopItem si = stock.get(i);
+                String afford = (gold >= si.price)
+                        ? Fmt.c(Fmt.BR_YELLOW, si.price + "g")
+                        : Fmt.c(Fmt.DIM,       si.price + "g");
+
+                System.out.println(Fmt.INDENT
+                    + Fmt.c(Fmt.B_YELLOW, "[" + (i + 1) + "]")
+                    + Fmt.c(Fmt.WHITE,    "  " + String.format("%-18s", si.item.getItemName()))
+                    + afford
+                    + Fmt.c(Fmt.DIM,      "   " + shopItemDetail(si.item)));
             }
             Fmt.blank();
 
             int cancel = stock.size() + 1;
-            System.out.println(Fmt.INDENT + Fmt.c(Fmt.DIM, "[" + cancel + "] Leave shop"));
+            System.out.println(Fmt.INDENT + Fmt.c(Fmt.DIM, "[" + cancel + "] Back"));
             Fmt.blank();
 
             int choice = promptInt("Buy item: ", 1, cancel);
             if (choice == cancel) return;
 
             int newGold = shop.buy(choice - 1, gold, player, inventory);
-            if (newGold >= 0) {
-            gold = newGold;
-            }
+            if (newGold >= 0) gold = newGold;
             pause();
         }
     }

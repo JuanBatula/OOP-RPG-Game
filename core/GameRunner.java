@@ -19,6 +19,7 @@ import items.Inventory;
 import items.Item;
 import items.Potion;
 import items.Weapon;
+import shop.Shop;
 
 /**
  * GameRunner — interactive entry point for Chronicles of the Fallen.
@@ -41,6 +42,7 @@ public class GameRunner {
     private static EnemyFactory  factory;
     private static int           currentLevel = 1;
     private static int           gold         = 0;
+    private static Shop          shop;
 
     // =========================================================================
     // ENTRY POINT
@@ -58,6 +60,7 @@ public class GameRunner {
 
         summary  = new RunSummary();
         factory  = new EnemyFactory();
+        shop = new Shop();
 
         String playerName = promptPlayerName();
         player    = new Player(playerName, 100, 100, 10);
@@ -107,18 +110,20 @@ public class GameRunner {
             printOpt(2, "View Stats");
             printOpt(3, "View Inventory");
             printOpt(4, "View Abilities");
-            printOpt(5, "Save Game");
-            printOpt(6, "Quit");
+            printOpt(5, "Shop                 — spend your gold");
+            printOpt(6, "Save Game");
+            printOpt(7, "Quit");
             Fmt.blank();
 
-            int choice = promptInt("Choose: ", 1, 6);
+            int choice = promptInt("Choose: ", 1, 7);
             switch (choice) {
                 case 1: exploreMenu();   break;
                 case 2: showStats();     break;
                 case 3: inventoryMenu(); break;
                 case 4: abilitiesMenu(); break;
-                case 5: saveGame();      break;
-                case 6: quitGame();      return;
+                case 5: shopMenu();      break;
+                case 6: saveGame();      break;
+                case 7: quitGame();      return;
             }
         }
     }

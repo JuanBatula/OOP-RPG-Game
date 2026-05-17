@@ -760,6 +760,70 @@ public class GameRunner {
         }
     }
 
+    private static void shopSellMenu() {
+        while (true) {
+            Fmt.printHeading("SHOP  —  SELL");
+
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.BR_YELLOW, "Gold: " + gold + "g")
+                + Fmt.c(Fmt.DIM,       "   │   sell price = 50% of item value"));
+            Fmt.blank();
+
+            List<Item> items = inventory.getItems();
+            if (items.isEmpty()) {
+                Fmt.dim("Your inventory is empty.");
+                Fmt.blank();
+                promptEnter();
+                return;
+            }
+
+            for (int i = 0; i < items.size(); i++) {
+                Item it = items.get(i);
+                int  sellPrice = Math.max(1, it.getValue() / 2);
+
+                boolean isEquipped = (it == player.getEquippedWeapon()
+                                || it == player.getEquippedArmor());
+                String tag = isEquipped
+                        ? "  " + Fmt.c(Fmt.BR_GREEN, "[E]") : "";
+
+                System.out.println(Fmt.INDENT
+                    + Fmt.c(Fmt.B_YELLOW, "[" + (i + 1) + "]")
+                    + Fmt.c(Fmt.WHITE,    "  " + String.format("%-18s", it.getItemName()))
+                    + tag
+                    + Fmt.c(Fmt.BR_YELLOW, "  +" + sellPrice + "g")
+                    + Fmt.c(Fmt.DIM,       "   " + shopItemDetail(it)));
+            }
+            Fmt.blank();
+
+            int cancel = items.size() + 1;
+            System.out.println(Fmt.INDENT + Fmt.c(Fmt.DIM, "[" + cancel + "] Back"));
+            Fmt.blank();
+
+            int choice = promptInt("Sell item: ", 1, cancel);
+            if (choice == cancel) return;
+
+            Item chosen = items.get(choice - 1);
+
+            // Warn before selling equipped gear
+            boolean isEquipped = (chosen == player.getEquippedWeapon()
+                            || chosen == player.getEquippedArmor());
+            if (isEquipped) {
+                Fmt.warn("That item is equipped. It will be unequipped before selling.");
+                System.out.println(Fmt.INDENT
+                    + Fmt.c(Fmt.B_YELLOW, "[1]") + Fmt.c(Fmt.WHITE, " Confirm")
+                    + "   "
+                    + Fmt.c(Fmt.DIM, "[2] Cancel"));
+                Fmt.blank();
+                int confirm = promptInt("Confirm sale: ", 1, 2);
+                if (confirm == 2) continue;
+            }
+
+            int earned = shop.sell(chosen, player, inventory);
+            if (earned >= 0) gold += earned;
+            pause();
+        }
+    }
+
     private static String shopItemDetail(Item it) {
         if (it instanceof Potion)   return "Heals "   + ((Potion) it).getHealAmount() + " HP";
         if (it instanceof Elixir)   return "+"        + ((Elixir) it).getAttackBoost() + " ATK (permanent)";

@@ -720,7 +720,23 @@ public class GameRunner {
                     + inventory.getSize() + "/" + inventory.getCapacity()));
             Fmt.blank();
 
-            
+            System.out.println(Fmt.INDENT
+                + Fmt.c(Fmt.B_YELLOW, "[B]")
+                + Fmt.c(Fmt.WHITE,    " Buy")
+                + Fmt.c(Fmt.DIM,      "   │   ")
+                + Fmt.c(Fmt.B_YELLOW, "[S]")
+                + Fmt.c(Fmt.WHITE,    " Sell")
+                + Fmt.c(Fmt.DIM,      "   │   ")
+                + Fmt.c(Fmt.DIM,      "[X] Leave"));
+            Fmt.blank();
+
+            String tab = promptString("Choose tab: ").trim().toUpperCase();
+
+            if (tab.equals("X")) return;
+            if (tab.equals("B")) { shopBuyMenu();  continue; }
+            if (tab.equals("S")) { shopSellMenu(); continue; }
+
+            Fmt.warn("Enter B, S, or X.");
         }
     }
 

@@ -60,6 +60,32 @@ public class Shop {
     return remaining;
   }
 
+  public int sell(Item item, Player player, Inventory inv) {
+    if (!inv.getItems().contains(item)) {
+        Fmt.warn("That item is not in your inventory.");
+        return -1;
+    }
+
+    // Auto-unequip if the item is currently equipped
+    if (item instanceof Weapon && item == player.getEquippedWeapon()) {
+        player.unequipWeapon();
+    } else if (item instanceof Armor && item == player.getEquippedArmor()) {
+        player.uneqipArmor();
+    }
+
+    int earned = Math.max(1, item.getValue() / 2);
+    inv.removeItem(item);
+
+    System.out.println(Fmt.INDENT
+        + Fmt.c(Fmt.B_CYAN,    player.getName())
+        + Fmt.c(Fmt.BR_YELLOW, " sold ")
+        + Fmt.c(Fmt.WHITE,     item.getItemName())
+        + Fmt.c(Fmt.BR_YELLOW, "  +" + earned + "g")
+        + Fmt.c(Fmt.DIM,       "   (sell price: " + earned + "g)"));
+
+    return earned;
+  }
+
   public List<ShopItem> getStock() { return stock; }
 
   public static class ShopItem {

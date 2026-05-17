@@ -34,7 +34,7 @@ public class Shop {
       return -1;
     }
 
-    ShopItem si = stock.get(Index);
+    ShopItem si = stock.get(index);
     if(gold < si.price) {
       Fmt.warn("Not enough gold!  "
           + Fmt.c(Fmt.BR_YELLOW, gold + "g")
@@ -48,7 +48,7 @@ public class Shop {
     }
 
     int remaining = gold - si.price;
-    inv.addItems(si.item);
+    inv.addItem(si.item);
 
     System.out.println(Fmt.INDENT
         + Fmt.c(Fmt.B_CYAN,    player.getName())
@@ -70,7 +70,7 @@ public class Shop {
     if (item instanceof Weapon && item == player.getEquippedWeapon()) {
         player.unequipWeapon();
     } else if (item instanceof Armor && item == player.getEquippedArmor()) {
-        player.uneqipArmor();
+        player.unequipArmor();
     }
 
     int earned = Math.max(1, item.getValue() / 2);
